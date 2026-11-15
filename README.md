@@ -69,6 +69,7 @@ is gone.
 ## Packaged Assets
 
 - **Art (`art/`)**: Botanical, crop, and flora resource graphics (`carrot.png`, `flax.jpg`, and the `art/plant/` hierarchy).
+- **Art & Botanical Sprite Specification ([`docs/SPEC.md`](docs/SPEC.md))**: Authoritative reference for camera perspective ($55^\circ$ $3/4$ diorama), Lamb/Room physical scale (`1 px = 1 wu = 4 cm`), root anchor placement (`anchor_y`), target pixel dimensions, 19-biome density profiles, and the Jungle/Desert flora & decoration roadmap.
 
 ## Testing
 

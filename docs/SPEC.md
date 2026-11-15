@@ -34,41 +34,69 @@ This document specifies the camera perspective, physical scale, root anchor plac
 
 ---
 
-## 3. Physical Scale & Root Anchor Placement
+## 3. Physical Scale, Visual Scale Ladder & Root Anchor Placement
 
-### 3.1 The Lamb Scale Anchor (`NDS_LAMB`)
-- **$1\text{ pixel (texel)} = 1\text{ world unit (wu)} = 4.0\text{ cm}$** ($25\text{ px} = 1.0\text{ meter}$).
-- **Reference Dimensions**:
-  - **The Lamb (`NDS_LAMB`)**: **$18\text{ px}$ tall ($0.72\text{ m}$)** from hooves to head crown, and **$22.5\text{ px}$ long ($0.90\text{ m}$)** nose-to-tail (inside a $32 \times 32\text{ px}$ frame).
-  - **1 Grid Cell (`NDW_CELL_PX`)**: **$16 \times 16\text{ px}$** ($0.64 \times 0.64\text{ m}$).
-  - **1 Room (`NDW_TILE_W` $\times$ `NDW_TILE_H`)**: **$160 \times 128\text{ px}$** ($6.40 \times 5.12\text{ m}$, $10 \times 8$ cells).
+### 3.1 The Fundamental World Scale (`1 px = 1 wu = 4 cm`)
+Every pixel (`texel`) in an unscaled sprite equals **1 World Unit (`1 wu = 4.0 cm`)** in the 3D diorama (`25 px = 1.00 m`):
 
-### 3.2 Root / Trunk Base Placement (`anchor_y`)
+| Reference Unit | Pixel / World Units (`px` = `wu`) | Physical Size (`m`) | Relative to the Lamb (`18 px` tall) | Code Constant / Source |
+| :--- | :--- | :--- | :--- | :--- |
+| **1 Texel / World Unit** | `1 × 1 px` | `0.04 × 0.04 m` (`4 cm`) | `1/18` of Lamb height | `1 wu` in `mods/nd/ux/nd_seven.c` |
+| **1 Grid Cell (`NDW_CELL_PX`)** | `16 × 16 px` | `0.64 × 0.64 m` | `0.89×` Lamb height | `NDW_CELL_PX = 16` (`seven-world.h`) |
+| **The Lamb (`NDS_LAMB` body)** | **`22.5 px` W × `18 px` H**<br>*(inside a `32 × 32 px` frame)* | **`0.90 m` long × `0.72 m` tall** | **`1.0×` (Baseline Reference)** | `LAMB_SIZE = 32`, `LAMB_FOOT_Y = 25` (`nd_seven_atlas_draw.h`) |
+| **1 Room (`10 × 8` cells)** | **`160 × 128 px`** | **`6.40 × 5.12 m`** | `~7.1` Lambs wide × `7.1` Lambs tall | `NDW_TILE_W = 160`, `NDW_TILE_H = 128` (`seven-world.h`) |
+| **7×7 Visible Room Window** | `1120 × 896 px` | `44.8 × 35.8 m` | Default camera view at `1.0x` zoom | `ND_SEVEN_CAM_DIST = 280.0f` |
+
+- **How `lamb.png` is framed (`32 × 32 px` cell)**:
+  - `htdocs/nd/lamb.png` is a `192 × 256 px` sheet (`6 columns × 8 rows` of `32 × 32 px` animation cells: rows `0..3` walk, rows `4..7` idle).
+  - Inside each `32 × 32 px` cell, the Lamb's hooves touch **`y = 25` (`6 px` above the bottom edge**, `bwz_off = (32 - 1) - 25 = 6 px`) and its head crown reaches **`y = 7`**, making the Lamb's visible body **`18 px` tall** and **`22.5 px` long** nose-to-tail.
+
+### 3.2 Visual Scale Ladder (Every Object Compared to the Lamb)
+
+```text
+Height (px / wu)
+  68 px (2.72 m)  ┬  [Emergent Jungle Tree: Kapok / Giant Douglas Fir (big: 62x66 to 64x68 px) — 3.7x Lamb height]
+  60 px (2.40 m)  ┼  [Standard Canopy Tree: Oak / Pine / Maple / Willow / Palm (big: 56x60 to 62x62 px) — 3.3x Lamb]
+  54 px (2.16 m)  ┼  [Wide-Crown Tree: Umbrella Acacia / Olive (big: 60x52 px) & Large Boulder 'O' (46x60 to 53x54 px)]
+  44 px (1.76 m)  ┼  [Mature Columnar Cactus (big: 26x44 px) & Giant Tree Fern (big: 44x44 px) — 2.4x Lamb height]
+  35 px (1.40 m)  ┼  [Young / Small Tree Sapling (small: 32x35 to 42x36 px) & Medium Rock 'o' (26x31 to 41x42 px) — 1.9x Lamb]
+  30 px (1.20 m)  ┼  [Tall Bulrush Reeds (big: 22x30 px) & Bushy Nightshade/Heliconia (big: 28x30 px) — 1.6x Lamb]
+  25 px (1.00 m)  ┼  [Young Cactus (small: 20x25 px) & Flowering Meadow Herb: Flax/Daisy/Carrot (big: 26x25 px) — 1.4x Lamb]
+  18 px (0.72 m)  ┼  ★ THE LAMB (18 px tall, 22.5 px long inside 32x32 frame) ★ / Young Shrub / Barrel Cactus (18x18 px)
+  15 px (0.60 m)  ┼  [Small Pebble / Flat Stone '*' (14x13 to 17x15 px) & Young Basal Herb (small: 14x13 to 16x17 px)]
+  11 px (0.44 m)  ┼  [Meadow Grass Tuft / Wildflower Bloom (10x12 to 20x18 px) — Hoof-to-Belly height on the Lamb]
+   0 px (0.00 m)  ┴─────────────────────────────────────── Ground Contact Line (anchor_y) ───────────────────────────────────────
+```
+
+### 3.3 Root / Trunk Base Placement (`anchor_y`)
 - **Horizontal Center**: Place the center of the trunk base, taproot, or stem clump horizontally at **`x = width / 2`**.
-- **Vertical Ground Contact (`anchor_y`)**: Place the ground contact point of the trunk/roots **$5\text{ to }8\text{ px}$ above the bottom edge of the PNG** (`ndw_find_content` and `ndw_obj_anchor_y` in `external/nd-seven/include/nd/seven-world.h`):
-  - **Large trees & mature cacti (`big`)**: `anchor_y = 8 px` from the bottom edge.
-  - **Small trees, saplings & shrubs (`small`)**: `anchor_y = 6 px` from the bottom edge.
-  - **Walkable herbs, wildflowers & reeds (`f`, `F`, `r`, `R`)**: `anchor_y = 5–6 px` from the bottom edge.
+- **Vertical Ground Contact (`anchor_y`)**: Place the ground contact point of the trunk/roots **`5\text{ to }8\text{ px}$ above the bottom edge of the PNG** (`ndw_find_content` and `ndw_obj_anchor_y` in `external/nd-seven/include/nd/seven-world.h`):
+  - **Large trees, emergent trees & mature cacti (`big`)**: `anchor_y = 8 px` from the bottom edge.
+  - **Small trees, saplings, shrubs & rocks (`small`)**: `anchor_y = 6 px` from the bottom edge.
+  - **Walkable herbs, wildflowers, reeds & pebbles (`f`, `F`, `r`, `R`, `*`)**: `anchor_y = 5–6 px` from the bottom edge.
 - **Why $5\text{–}8\text{ px}$ above the bottom?**:
-  - In a $55^\circ$ $3/4$ view, a tree trunk base or clump of stems has front-to-back thickness on the ground plane. Placing the anchor center $5\text{–}8\text{ px}$ above the bottom row allows the front roots or foreground basal leaves to sit naturally in front of the anchor point and keeps the base firmly planted when the upper quad sways in the wind.
+  - In a $55^\circ$ $3/4$ view, a tree trunk base, boulder, or clump of stems has front-to-back thickness on the ground plane (just like the Lamb's hooves sit `6 px` above the bottom of its `32×32` cell). Placing the anchor center $5\text{–}8\text{ px}$ above the bottom row allows the front roots, basal leaves, or rock base to sit naturally in front of the anchor point and keeps the base firmly planted when the upper quad sways in the wind.
 - **No Extra Transparent Margin Needed**:
   - `nd_seven_plant_rect()` (`mods/nd/ux/nd_seven_atlas_draw.c`) automatically adds `4 px` left/right and `2 px` top transparent padding (`0 px` at the bottom so `anchor_y` is preserved) when packing PNGs into the runtime texture atlas.
 
 ---
 
-## 4. Target PNG Dimensions by Plant Category
+## 4. Target PNG Dimensions by Object Category (Plants & Stones)
 
-`seven_calc_obj_billboard_dims()` (`mods/nd/ux/nd_seven.c`) applies per-category world-unit bounding boxes (`max_w`, `max_h`), and the atlas packer adds `8 px` to width (`4 px` left + `4 px` right) and `2 px` to height (`2 px` top). Keeping PNG dimensions within the target ranges below guarantees **1:1 crisp pixel-art rendering with zero downscaling**:
+`seven_calc_obj_billboard_dims()` (`mods/nd/ux/nd_seven.c:905-948`) applies per-category world-unit bounding boxes (`max_w`, `max_h`), and the runtime atlas packer adds `8 px` to width (`4 px` left + `4 px` right) and `2 px` to height (`2 px` top). Keeping PNG dimensions within the target ranges below guarantees **1:1 crisp pixel-art rendering with zero downscaling**:
 
-| Plant Category | Growth Stage | Ideal PNG Size (`W × H` px) | Unscaled Cap (`W × H` px before pad) | Display Cap (`max_w × max_h` wu) | Ground Anchor (`anchor_y`) | Collision Tier (`col_mask`) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Standard Canopy Trees**<br>(Oak, Pine, Fir, Birch, Maple, Willow) | `big`<br>`small` | `56 × 60` to `62 × 66`<br>`32 × 33` to `42 × 36` | `56 × 60`<br>`32 × 36` | `64 × 62 wu` ($2.56 \times 2.48\text{ m}$)<br>`40 × 38 wu` ($1.60 \times 1.52\text{ m}$) | `8 px`<br>`6 px` | `1` or `2` (Solid trunk)<br>`1` (Solid trunk) |
-| **Wide-Crown Trees**<br>(Acacia, Olive) | `big`<br>`small` | `58 × 52` to `60 × 52`<br>`32 × 32` to `38 × 34` | `60 × 52`<br>`36 × 32` | `68 × 54 wu` ($2.72 \times 2.16\text{ m}$)<br>`44 × 34 wu` ($1.76 \times 1.36\text{ m}$) | `8 px`<br>`6 px` | `1` or `2` (Solid trunk)<br>`1` (Solid trunk) |
-| **Columnar Cacti**<br>(`arthrocereus_rondonianus`) | `big`<br>`small` | `20 × 42` to `26 × 44`<br>`16 × 23` to `22 × 25` | `20 × 44`<br>`12 × 26` | `28 × 46 wu` ($1.12 \times 1.84\text{ m}$)<br>`20 × 28 wu` ($0.80 \times 1.12\text{ m}$) | `8 px`<br>`6 px` | `1` (Solid stem)<br>`1` (Solid stem) |
-| **Wetland Reeds / Bulrush**<br>(`typha_latifolia`) | `big`<br>`small` | `20 × 30` to `22 × 30`<br>`14 × 20` to `16 × 22` | `20 × 32`<br>`12 × 22` | `28 × 34 wu` ($1.12 \times 1.36\text{ m}$)<br>`20 × 24 wu` ($0.80 \times 0.96\text{ m}$) | `6 px`<br>`5 px` | `0` (Walkable)<br>`0` (Walkable) |
-| **Ground Herbs, Crops & Flowers**<br>(Flax, Carrot, Tomato, Daisy) | `big`<br>`small` | `22 × 20` to `28 × 26`<br>`14 × 13` to `20 × 18` | `22 × 26`<br>`14 × 18` | `30 × 28 wu` ($1.20 \times 1.12\text{ m}$)<br>`22 × 20 wu` ($0.88 \times 0.80\text{ m}$) | `6 px`<br>`5 px` | `0` (Walkable)<br>`0` (Walkable) |
+| Object Category | Stage / Tier | Ideal PNG Size (`W × H` px) | Unscaled Cap (`W × H` px before pad) | Display Cap (`max_w × max_h` wu) | Ground Anchor (`anchor_y`) | Size vs. Lamb (`18 px` H) | Collision (`col_mask`) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Emergent & Canopy Trees**<br>(Oak, Pine, Fir, Birch, Maple, Willow, Kapok, Palm, Bamboo) | `big`<br>`small` | `56 × 60` to `62 × 66`<br>`32 × 33` to `42 × 36` | `56 × 60`<br>`32 × 36` | `64 × 62 wu` ($2.56 \times 2.48\text{ m}$)<br>`40 × 38 wu` ($1.60 \times 1.52\text{ m}$) | `8 px`<br>`6 px` | `3.3× – 3.7×` Lamb<br>`1.8× – 2.0×` Lamb | `1` or `2` (Solid trunk)<br>`1` (Solid trunk) |
+| **Wide-Crown Trees**<br>(Umbrella Acacia `#7`, Olive `#13`) | `big`<br>`small` | `58 × 52` to `60 × 52`<br>`32 × 32` to `38 × 34` | `60 × 52`<br>`36 × 32` | `68 × 54 wu` ($2.72 \times 2.16\text{ m}$)<br>`44 × 34 wu` ($1.76 \times 1.36\text{ m}$) | `8 px`<br>`6 px` | `2.9×` Lamb (`3×` wide)<br>`1.8×` Lamb | `1` or `2` (Solid trunk)<br>`1` (Solid trunk) |
+| **Tree Ferns & Large Understory**<br>(`cyathea_cooperi` `#19`) | `big`<br>`small` | `40 × 40` to `44 × 44`<br>`26 × 24` to `28 × 26` | `40 × 44`<br>`26 × 26` | `48 × 46 wu` ($1.92 \times 1.84\text{ m}$)<br>`34 × 28 wu` ($1.36 \times 1.12\text{ m}$) | `6 px`<br>`6 px` | `2.4×` Lamb<br>`1.4×` Lamb | `1` (Solid caudex)<br>`0` or `1` |
+| **Columnar & Prickly-Pear Cacti**<br>(`arthrocereus` `#6`, `opuntia` `#21`) | `big`<br>`small` | `20 × 42` to `26 × 44` (`28 × 26` pad)<br>`16 × 23` to `22 × 25` (`18 × 18` barrel) | `20 × 44`<br>`12 × 26` | `28 × 46 wu` ($1.12 \times 1.84\text{ m}$)<br>`20 × 28 wu` ($0.80 \times 1.12\text{ m}$) | `8 px`<br>`6 px` | `2.4×` Lamb<br>`1.0× – 1.4×` Lamb | `1` (Solid stem)<br>`1` (Solid stem) |
+| **Wetland Reeds / Bulrush**<br>(`typha_latifolia` `#15`) | `big`<br>`small` | `20 × 30` to `22 × 30`<br>`14 × 20` to `16 × 22` | `20 × 32`<br>`12 × 22` | `28 × 34 wu` ($1.12 \times 1.36\text{ m}$)<br>`20 × 24 wu` ($0.80 \times 0.96\text{ m}$) | `6 px`<br>`5 px` | `1.7×` Lamb<br>`1.2×` Lamb | `0` (Walkable)<br>`0` (Walkable) |
+| **Ground Herbs, Crops & Flowers**<br>(Flax, Carrot, Tomato, Daisy, Heliconia, Sagebrush) | `big`<br>`small` | `22 × 20` to `28 × 26`<br>`14 × 13` to `20 × 18` | `22 × 26`<br>`14 × 18` | `30 × 28 wu` ($1.20 \times 1.12\text{ m}$)<br>`22 × 20 wu` ($0.88 \times 0.80\text{ m}$) | `6 px`<br>`5 px` | `1.1× – 1.4×` Lamb<br>`0.7× – 1.0×` Lamb | `0` (Walkable)<br>`0` (Walkable) |
+| **Stones, Rocks & Boulders**<br>(`external/nd-stone`, `stone.h`) | `O` Boulder (`1/8`)<br>`o` Rock (`2/8`)<br>`*` Pebble (`5/8`) | `46 × 54` to `53 × 60`<br>`26 × 28` to `41 × 42`<br>`14 × 13` to `22 × 23` | `53 × 60`<br>`41 × 42`<br>`22 × 23` | `53 × 60 wu` ($2.12 \times 2.40\text{ m}$)<br>`41 × 42 wu` ($1.64 \times 1.68\text{ m}$)<br>`22 × 23 wu` ($0.88 \times 0.92\text{ m}$) | `6 px`<br>`6 px`<br>`5 px` | `3.0× – 3.3×` Lamb<br>`1.5× – 2.3×` Lamb<br>`0.7× – 1.2×` Lamb | `2` (Solid boulder)<br>`1` (Solid rock)<br>`0` (Walkable pebble) |
+| **Meadow Grass Tufts & Blooms**<br>(`NDB_*`, `NDS_DECOR_*`) | Floor tuft<br>Wildflower | `16 × 18` to `20 × 22`<br>`10 × 12` to `15 × 12` | `20 × 22`<br>`15 × 12` | `20 × 22 wu` ($0.80 \times 0.88\text{ m}$)<br>`15 × 12 wu` ($0.60 \times 0.48\text{ m}$) | `4 px`<br>`4 px` | `0.6× – 1.0×` Lamb<br>`0.5× – 0.7×` Lamb | `0` (Walkable)<br>`0` (Walkable) |
 
-*(Note: The runtime PNG decoder in `nd_seven_atlas_draw.c` accepts images up to `160 × 160 px`. Larger old-growth trees up to `160 × 160 px` can be enabled at any time by raising `max_w` / `max_h` in `seven_calc_obj_billboard_dims`).*
+*(Note: The runtime PNG decoder in `nd_seven_atlas_draw.c` accepts images up to `160 × 160 px`. Larger old-growth or emergent jungle trees up to `160 × 160 px` can be enabled at any time by raising `max_w` / `max_h` in `seven_calc_obj_billboard_dims`).*
 
 ---
 
@@ -150,21 +178,60 @@ To ensure that a **Jungle looks like a dense, multi-layered Jungle** and a **Des
 
 ---
 
-## 7. Priority Art Roadmap (For External Artist Collaboration)
+## 7. Priority Art Roadmap & Biome Decoration Plan (For Artist Collaboration)
 
-### Priority 1: Deduplicating Placeholder PNGs in the 16 Canonical Species
-Several species in `external/nd-plant/art/plant/` currently share identical placeholder PNGs:
-1. **`abies_alba` vs. `pseudotsuga_menziesii`**: Currently byte-for-byte identical (`small/1..2.png`, `big/1..2.png`). Giving *Abies alba* a cooler silvery-blue horizontal-tiered subalpine fir silhouette and *Pseudotsuga menziesii* a taller, rugged coastal Douglas fir silhouette will immediately distinguish Boreal/Montane from Temperate Rainforests.
-2. **`betula_pubescens` vs. `betula_pendula`**: Currently identical. *Betula pubescens* (Downy/Arctic birch) should look wind-sculpted, multi-stemmed, and subarctic, while *Betula pendula* is tall and weeping with crisp white/black diamond bark.
-3. **`acer_pseudoplatanus`, `quercus_robur`, and `olea_europaea`**: Share several `small` and `big` PNGs. Distinguishing the gnarled, silvery-green Mediterranean *Olea europaea*, the broad buttressed *Quercus robur*, and the warm palmate-leaved *Acer pseudoplatanus* will give Mediterranean, Woodland, and Temperate Seasonal forests distinct character.
-4. **`linum_usitatissimum` vs. `bellis_perennis`**: Currently identical (`16×17` and `28×25`). *Linum* should feature upright stalks with sky-blue flowers / golden flax bolls, while *Bellis* is a low basal rosette with white-and-gold daisy blooms.
+Our goal is for every biome—especially **Tropical Jungles (`16, 17`)** versus **Hot & Cold Deserts (`14, 6`)**—to be unmistakably recognizable at first glance through both **engine placement rules** (documented in [`IMPROVE.md`](file:///home/quirinpa/site/IMPROVE.md)) and **dedicated botanical & decorative artwork**.
 
-### Priority 2: Replacing Any Remaining Blocky Placeholder Trees
-- Ensure all `big/2.png` and `small/1..2.png` files under `quercus_robur`, `olea_europaea`, `acacia_senegal`, and `salix_babylonica` are true 1×1 pixel art matching the Lamb (`1 px = 4 cm`) rather than upscaled 2×2 macro-pixels.
+### 7.1 How the Engine Will Make Jungles & Deserts Look Authentic
 
-### Priority 3: New Species Candidates (Expanding `ND_PLANT_MAX` Beyond 16)
-When adding new rows to `external/nd-plant/data/plants.dsv` and `s_nd_plant_specs` (`ND_PLANT_PACK_ID` supports up to `31` species in bits `0..4`), the highest-value additions for biome coverage are:
-- **Tropical Rainforest & Seasonal (Biomes 16–17)**: Buttress-rooted emergent rainforest tree (*Ceiba pentandra* / Kapok), feather/fan palm (*Euterpe oleracea* / *Roystonea*), giant tree fern (*Cyathea*), or broadleaf banana/monstera understory.
-- **Tundra & Cold Desert (Biomes 2, 6)**: Arctic cushion moss (*Silene acaulis*), reindeer lichen (*Cladonia rangiferina*), dwarf prostrate willow (*Salix herbacea*), and cold-steppe sagebrush (*Artemisia tridentata*).
-- **Wetland / Swamp (Biome 5)**: Buttressed bald cypress (*Taxodium distichum*) or prop-rooted coastal mangrove (*Rhizophora mangle*).
+1. **True Multi-Story Jungles (`BIOME_TROPICAL_RAINFOREST = 17` & `BIOME_TROPICAL_SEASONAL = 16`)**:
+   - **Canopy & Understory Layering**: The engine raises room object capacity to `NDW_MAX_OBJ = 32` and removes the artificial empty box in the center of wilderness rooms. Each room in a Tropical Rainforest spawns **`12–18` overlapping `big` canopy trees** (`min_d2 = 196`) intermixed with **`6–10` `small` understory plants** (`min_d2 = 81`) right underneath the crowns (`18–28` plants per room).
+   - **Lush Jungle Floor & Dappled Shade**: The ground shader (`s_fs_terrain`) casts cool, dappled overhead canopy shade (`0.84–0.96×`) over dark humus and warm red-ochre tropical laterite soil, carpeted by a `2.6×` denser (`16 wu` grid) floor layer of ferns, broad-leaf sedges, and bright rainforest blooms.
+   - **Why Dedicated Tropical Art Matters**: Right now, the 16-species table temporarily borrows *Salix babylonica* (`#11`), *Acacia senegal* (`#7`), and *Olea europaea* (`#13`) to fill tropical canopy slots. Adding true tropical species (Kapok/Ceiba with buttress roots, Palms, Bamboo thickets, Tree Ferns, and Heliconia/Monstera understory) will replace those stand-ins completely.
+
+2. **Truly Desertic Deserts (`BIOME_DESERT = 14` & `BIOME_COLD_DESERT = 6`)**:
+   - **87.5% Barren Rooms (`sparse_room_mask = 0x7`)**: `7 out of 8` desert rooms spawn **zero plants (`0` objects)**—just sweeping, wind-sculpted 2D crescentic (`barchanoid`) sand dunes in Hot Deserts (`14`) or wind-scoured alkali gravel/reg in Cold Deserts (`6`).
+   - **Isolated Xerophytes Only (`count = 1`)**: In the `1-in-8` rooms where desert flora does appear, the engine caps the cluster to **a single isolated plant (`count = 1`)**—never a grove or forest—and strictly blocks temperate herbs (`linum`, `bellis`, `daucus`) and savannah trees (`acacia_senegal`, `olea_europaea`) from spawning below `rn = 95`.
+   - **Zero Grass Carpet**: Below `rn = 95`, meadow grass tuft density is strictly **`0.0`** (unless immediately touching an oasis shoreline).
+
+---
+
+### 7.2 Priority 1: Deduplicating & Refining the Existing 16 Species
+Several folders in `external/nd-plant/art/plant/` currently share identical placeholder PNGs or 2×2 upscaled pixels:
+1. **`abies_alba` (`#5`) vs. `pseudotsuga_menziesii` (`#1`)**: Currently byte-for-byte identical. Give *Abies alba* a cool silvery-blue horizontal-tiered subalpine fir silhouette and *Pseudotsuga menziesii* a tall, rugged Pacific-Northwest Douglas fir spire.
+2. **`betula_pubescens` (`#4`) vs. `betula_pendula` (`#2`)**: Currently identical. Make *Betula pubescens* a compact, multi-stemmed, wind-sculpted subarctic/krummholz birch, while *Betula pendula* is tall and weeping with crisp white-and-black diamond bark.
+3. **`acer_pseudoplatanus` (`#12`), `quercus_robur` (`#10`), and `olea_europaea` (`#13`)**: Currently share several `small` and `big` PNGs. Differentiating the gnarled, silvery-sage Mediterranean *Olea europaea*, the broad buttressed *Quercus robur*, and the warm 5-lobed *Acer pseudoplatanus* will immediately distinguish Mediterranean (`4`), Woodland (`11`), and Temperate Seasonal (`12`).
+4. **`linum_usitatissimum` (`#3`) vs. `bellis_perennis` (`#14`)**: Currently identical (`16×17` and `28×25`). *Linum* should show slender upright stalks with sky-blue 5-petalled flowers / golden bolls, while *Bellis* is a low basal rosette with white-and-gold daisy blooms.
+
+---
+
+### 7.3 Priority 2: Planned Botanical Expansion (`IDs 16..25`, Wire Capacity up to `31`)
+`ND_PLANT_PACK_ID` packs the 1-based species ID into `5` bits (`0x1F`), supporting up to **`31` canonical species** without changing the network/map binary format. Adding any of the species below only requires dropping `small/1..2.png` and `big/1..2.png` into `external/nd-plant/art/plant/<slug>/` and adding the row to `plants.dsv` / `plant.h`:
+
+| Planned ID | Folder Slug (`<slug>`) | Species / Common Name | Target Biomes | Target PNG Size (`small` / `big`) | Visual & Silhouette Brief for Artist |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **16** | `ceiba_pentandra` | **Kapok / Ceiba Emergent Tree** | Tropical Rainforest (`17`), Tropical Seasonal (`16`) | `40×38` /<br>`64×68` (`anchor_y = 8`) | Massive flaring **plank buttress roots** at the base, tall smooth pale-grey column trunk, wide umbrella tier of deep emerald foliage with hanging lianas/epiphytes. |
+| **17** | `roystonea_regia` | **Tropical Feather / Coconut Palm** | Tropical Rainforest (`17`), Tropical Seasonal (`16`), Oasis (`14`) | `36×36` /<br>`56×64` (`anchor_y = 7`) | Ringed, slightly curving grey-brown palm trunk crowned by a radiating rosette of arching glossy-green feather fronds (and coconut cluster at the crown base). |
+| **18** | `bambusa_vulgaris` | **Giant Monsoon Bamboo Clump** | Tropical Seasonal / Monsoon Forest (`16`), Rainforest (`17`) | `32×36` /<br>`52×62` (`anchor_y = 7`) | Tight cluster of segmented golden-green & chartreuse culm stalks arching outward at the top into feathery lance-leaved foliage. Iconic for Monsoon Forest (`16`). |
+| **19** | `cyathea_cooperi` | **Giant Tree Fern / Broadleaf Understory** | Tropical Rainforest (`17`), Temperate Rainforest (`13`) | `28×26` /<br>`44×44` (`anchor_y = 6`) | Fibrous dark-brown caudex trunk topped by a wide, lacy star-burst of bright emerald unfurling fern fronds (`small` = low rainforest fern/monstera bush). |
+| **20** | `heliconia_rostrata` | **Jungle Heliconia / Bird-of-Paradise** | Tropical Rainforest (`17`), Tropical Seasonal (`16`) | `20×20` /<br>`30×28` (`col = 0`, walkable) | Broad paddle-shaped banana-like leaves with vibrant hanging crimson-and-gold lobster-claw bracts. Breaks up the green jungle understory with tropical color. |
+| **21** | `opuntia_ficus_indica` | **Prickly Pear / Barrel Cactus** | Hot Desert (`14`), Arid Shrubland (`7`), Mediter. (`4`) | `18×18` /<br>`28×26` (`col = 1`, solid) | Low, sprawling paddle cactus (`small` = round golden-spined barrel cactus; `big` = branching flat blue-green pads with bright yellow/magenta desert blooms). |
+| **22** | `artemisia_tridentata` | **Desert Sagebrush & Dry Scrub** | Cold Desert (`6`), Shrubland (`7`), Hot Desert (`14`) | `18×16` /<br>`28×24` (`col = 0`, walkable) | Gnarled, twisted dry grey-brown woody stems with dusty silvery-sage / sun-bleached ochre foliage (`small` = dry desert tumbleweed/thorn scrub). |
+| **23** | `taxodium_distichum` | **Swamp Bald Cypress / Mangrove** | Wetland (`5`), Tropical Floodplain (`17`) | `38×36` /<br>`60×64` (`anchor_y = 8`) | Fluted, buttressed reddish-brown swamp trunk surrounded by conical woody "knees" (or arched mangrove prop roots), draped in trailing pale-green Spanish moss. |
+| **24** | `cladonia_rangiferina` | **Arctic Cushion Moss & Reindeer Lichen** | Tundra (`2`), Alpine Meadow (`3`) | `16×12` /<br>`24×16` (`col = 0`, walkable) | Low, wind-hugging mounds of pale creamy-grey reindeer lichen, bright tundra moss cushions, and tiny purple saxifrage blooms. |
+
+---
+
+### 7.4 Priority 3: Biome-Fitting Ground Decorations & Stones (`nd-stone` & Meadow Layer)
+A biome's identity comes as much from its **non-tree ground props** as from its trees. Here is how ground decorations are organized across biomes so Deserts, Jungles, and Tundra never share out-of-place props:
+
+| Biome Family | Stone / Boulder Props (`*` Pebble, `o` Rock, `O` Boulder) | Small Ground / Floor Decorations | What Must NEVER Appear Here |
+| :--- | :--- | :--- | :--- |
+| **Hot Desert (`14`)** | Rare (`~1.2%` of rooms): **Wind-carved red/ochre sandstone hoodoos**, flat desert pavement slabs, warm terracotta pebbles. | Sun-bleached desert deadwood/driftwood, dry thorn twigs, wind-rippled sand crests. | Green meadow grass tufts, daisies (`14`), flax (`3`), carrots (`8`), mossy grey boulders, artificial river trenches. |
+| **Cold Desert (`6`) & Shrubland (`7`)** | Frequent (`~15%` of rooms): **Angular alkali-grey & buff frost-shattered rocks**, stony reg/scree scatter, dry wash boulders. | Sparse dry sagebrush clumps, pale alkali-steppe straw tussocks (0% in `6`, 20% clumped in `7`). | Lush green turf, tall canopy trees, tropical cacti (`6`), wetland reeds (`15`). |
+| **Tropical Rainforest (`17`)** | Very rare on deep humus (`~1.2%`): **Moss-draped dark jungle boulders**, wet river-worn stones along basin banks. | **200% density jungle floor**: fern fronds, broad-leaf aroids/monstera, fallen mossy logs, buttress roots, crimson/orchid blooms. | Bare sun-bleached pasture grass, pine/birch/oak/maple trees, dry desert sand. |
+| **Tropical Seasonal / Monsoon (`16`)** | Moderate (`~4.7%`): **Warm iron-rich red-ochre laterite boulders** and weathered temple-stone outcrops. | **Sun-dappled monsoon floor**: golden-olive bamboo leaf litter, tall monsoon grass clumps, amber/magenta seasonal blossoms. | Boreal conifers (`0, 1, 5`), European birch (`2, 4`), cold snow/tundra rocks. |
+| **Tundra (`2`) & Alpine (`3`)** | Frequent (`~15%`): **Frost-heaved granite erratics (`felsenmeer`)**, lichen-crusted slate slabs, snow-dusted scree. | Low cushion moss, pale reindeer lichen, cotton-grass puffs, stunted wind-sheared krummholz (`3`). | Tall multi-tree canopies, warm-climate broadleaf trees, lush tall grass. |
+| **Volcanic (`18`)** | High (`~18%`): **Jagged black basalt columns**, glossy obsidian shards, cooling sulfur/cinder vents. | 100% barren black ash and basaltic scoria (`0` plants, `0` grass tufts). | Any living vegetation or green grass tufts. |
+
 
