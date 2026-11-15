@@ -1,14 +1,21 @@
-# name|max_art|color|bold|small|big|tmp_min|tmp_max|rn_min|rn_max|y|drop
+# name|max_art|color|bold|small|big|tmp_min|tmp_max|rn_min|rn_max|y|drop|small_art|big_art|small_col|big_col
 # color: black|red|yellow|green|cyan|blue|magenta|white
 # bold: 1 or 0
 # drop: stick|carrot|tomato|none
-pinus sylvestris|19|green|1|x|X|30|70|50|1024|4|stick
-pseudotsuga menziesii|21|green|1|t|T|32|100|180|350|1|stick
-betula pendula|14|yellow|0|x|X|30|86|0|341|4|stick
-linum usitatissimum|7|yellow|0|x|X|30|86|20|341|30|stick
-betula pubescens|0|white|0|x|X|50|146|500|900|4|stick
-abies alba|10|green|1|a|A|-40|86|100|200|4|stick
-arthrocereus rondonianus|9|green|1|i|I|110|190|10|180|4|stick
-acacia senegal|12|green|1|t|T|40|150|20|345|4|stick
-daucus carota|6|white|0|x|X|38|96|100|200|4|carrot
-solanum lycopersicum|11|red|0|x|X|50|98|100|200|4|tomato
+# small_col / big_col: ground-plane collision footprint relative to bottom-center (0,0) (0=walkable, 1=standard trunk, 2=wide trunk)
+pinus sylvestris|19|green|1|x|X|-36|54|140|515|2|stick|2|2|1|1
+pseudotsuga menziesii|21|green|1|t|T|-8|54|240|515|2|stick|2|2|1|1
+betula pendula|14|yellow|0|x|X|-28|54|180|480|2|stick|2|2|1|1
+linum usitatissimum|7|yellow|0|x|X|-15|115|20|420|5|stick|2|2|0|0
+betula pubescens|0|white|0|x|X|-36|54|250|515|2|stick|2|2|1|1
+abies alba|10|green|1|a|A|-37|36|245|515|2|stick|2|2|1|2
+arthrocereus rondonianus|9|green|1|i|I|65|115|0|145|3|stick|2|2|1|1
+acacia senegal|12|yellow|1|t|T|65|115|35|515|1|stick|2|2|1|1
+daucus carota|6|white|0|x|X|10|115|85|360|4|carrot|2|2|0|0
+solanum lycopersicum|11|red|0|x|X|34|115|80|460|4|tomato|2|2|0|0
+quercus robur|14|green|1|x|X|30|65|220|460|1|stick|2|2|1|2
+salix babylonica|14|green|0|w|W|24|115|240|515|1|stick|2|2|1|2
+acer pseudoplatanus|14|green|1|x|X|28|65|250|515|1|stick|2|2|1|2
+olea europaea|12|yellow|0|v|V|30|115|110|515|2|stick|2|2|1|2
+bellis perennis|7|white|1|f|F|-24|115|40|480|3|none|2|2|0|0
+typha latifolia|7|cyan|0|r|R|-10|115|250|515|2|stick|2|2|0|0

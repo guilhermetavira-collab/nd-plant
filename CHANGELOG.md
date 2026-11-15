@@ -1,4 +1,20 @@
-## [1.1.0]
+## [Unreleased] (target: v1.0.4)
+
+### Added
+- **Botanical Species Expansion & RPG Pixel-Art Sprites (`data/plants.dsv`, `art/plant/`, `include/nd/plant.h`, `docs/SPEC.md`)**:
+  - Added 6 species (`quercus robur`, `salix babylonica`, `acer pseudoplatanus`, `olea europaea`, `bellis perennis`, and `typha latifolia`) to `data/plants.dsv` and `enum base_plant` (16 total species) and recalibrated temperature/rainfall envelopes.
+  - Generated 64 transparent RPG pixel-art PNGs (`art/plant/<species>/{small,big}/{1,2}.png`) across all 16 botanical species, growth stages, and variants.
+  - Added `nd_plant_spec_t`, `nd_biome_flora_profile_t`, and deterministic flora evaluation helpers in `<nd/plant.h>` for shared server/client biome canopy density, tree-vs-herb weighting, and drought/cold hardiness.
+
+### Fixed
+- **Coastal Flora Transition & Tile Zero-Initialization (`src/libnd-plant.c`, `include/nd/plant.h`)**:
+  - Zero-initialized `plant_tile_t` in `plant_noise_decorate` (`memset(&pd, 0, sizeof(pd))`) and enabled flora generation across coastal water transitions (`he >= w || !r.is_water`).
+  - Tuned biome canopy structure and rainfall thresholds for balanced woodland, savanna, desert oasis, and alpine flora distribution.
+
+### Changed
+- Refactored `stllog` logging comments, removed `add-prefix` Makefile paths, and cleaned module dependencies.
+
+## [1.0.3]
 
 - **Declarative DSV Table (`data/plants.dsv`)**:
   - Exported 10 botanical species into declarative `data/plants.dsv` table.
@@ -16,7 +32,7 @@
   installed packages named in `.github/workflows/ci.yml`. The build now
   resolves `<nd/…>` the way a packager sees it.
 - **macOS: link with `-undefined dynamic_lookup`.** macOS `ld` rejects
-  undefined symbols in a shared library, but `WARN` needs `qsyslog` — an
+  undefined symbols in a shared library, but `WARN` needs `stllog` — an
   engine-provided function pointer resolved at `dlopen` time (Linux allows
   this by default). `-undefined dynamic_lookup` is the Darwin equivalent, set
   as `LDFLAGS-libnd-plant-Darwin` so no other platform is affected.
