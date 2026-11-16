@@ -2,7 +2,7 @@
 
 `nd-plant` for [axil-nd](../axil-nd), ported from SIC to libxylem.
 
-Owns plants: the ten tree/crop species, their skeletons and drops, map
+Owns plants: the 16 tree, shrub, flower, and crop species, their skeletons and drops, map
 generation (`on_noise`, `on_empty_tile`, `on_spawn`), and the carrot/tomato
 consumables that feed nd-drink. The `plant_tile_t` the map layer and nd-mob
 read is defined in `<nd/plant.h>`.
@@ -17,6 +17,7 @@ Installs:
 
 ```
 lib/libnd-plant.so
+include/nd/plant-types.h
 include/nd/plant.h
 ```
 
@@ -59,16 +60,17 @@ is gone.
 * `xy_install()` registers the species skeletons and drops (chop action
   first, then the type, consumables, drops and species — the order the
   original FIXME comments insist on).
-* `on_noise` hashes the tile (`XXH32`), grows the noise tile and shuffles
+* `on_noise` hashes the tile (`XXH32`), evaluates continuous biome viability and multi-scale canopy/moisture competition (`nd_plant_canopy_competition`), grows the noise tile and shuffles
   it; `on_empty_tile` renders a side; `on_spawn` plants the tile's species;
   `on_examine` reports `plid` and size; `on_add` drops the plant.
 * The old `on_icon` body is now a `core_icon_decorate` decorator registered
   in `xy_install` (the shop precedent): it replaces the glyph with the
-  growth stage and adds the chop action.
+  growth stage and adds the chop action. A companion `core_art_decorate` decorator (`plant_art_decorator`) resolves species and deterministic growth/variant paths (`art/plant/<species>/{small,big}/{1,2}.png`).
 
 ## Packaged Assets
 
-- **Art (`art/`)**: Botanical, crop, and flora resource graphics (`carrot.png`, `flax.jpg`, and the `art/plant/` hierarchy).
+- **Art (`art/`)**: Botanical, crop, and flora resource graphics (`carrot.png`, `flax.jpg`, and the `art/plant/` hierarchy including full-scale diffuse sprites and `*_n.png` tangent-space normal maps).
+- **Art & Botanical Sprite Specification ([`docs/SPEC.md`](docs/SPEC.md))**: Authoritative reference for camera perspective ($55^\circ$ $3/4$ diorama), Lamb/Room physical scale (`1 px = 1 wu = 4 cm`), root anchor placement (`anchor_y`), target pixel dimensions, 19-biome density profiles, and the Jungle/Desert flora & decoration roadmap.
 
 ## Testing
 
