@@ -65,12 +65,12 @@ is gone.
   `on_examine` reports `plid` and size; `on_add` drops the plant.
 * The old `on_icon` body is now a `core_icon_decorate` decorator registered
   in `xy_install` (the shop precedent): it replaces the glyph with the
-  growth stage and adds the chop action. A companion `core_art_decorate` decorator (`plant_art_decorator`) resolves species and deterministic growth/variant paths (`art/plant/<species>/{small,big}/{1,2}.png`).
+  growth stage and adds the chop action. A companion `core_art_decorate` decorator (`plant_art_decorator`) resolves species and biologically height-classified sprite paths (`art/plant/<species>/{small,medium,big}/1.png` and `1_n.png`).
 
 ## Packaged Assets
 
-- **Art (`art/`)**: Botanical, crop, and flora resource graphics (`carrot.png`, `flax.jpg`, and the `art/plant/` hierarchy including full-scale diffuse sprites and `*_n.png` tangent-space normal maps).
-- **Art & Botanical Sprite Specification ([`docs/SPEC.md`](docs/SPEC.md))**: Authoritative reference for camera perspective ($55^\circ$ $3/4$ diorama), Lamb/Room physical scale (`1 px = 1 wu = 4 cm`), root anchor placement (`anchor_y`), target pixel dimensions, 19-biome density profiles, and the Jungle/Desert flora & decoration roadmap.
+- **Art (`art/`)**: Botanical, crop, and flora resource graphics (`carrot.png`, `flax.jpg`, and the `art/plant/<species>/{small,medium,big}/` hierarchy where each of the 16 species has its world-map diffuse sprite `1.png` and tangent-space normal map `1_n.png` classified by mature biological height: `small` $< 0.5\text{ m}$, `medium` $0.5\text{–}3\text{ m}$, `big` $> 3\text{ m}$).
+- **Art & Botanical Sprite Specification ([`docs/SPEC.md`](docs/SPEC.md))**: Authoritative reference for camera perspective ($55^\circ$ $3/4$ diorama), Lamb/Room physical scale (`1 px = 1 wu = 4 cm`), root anchor placement (`anchor_y`), target pixel dimensions, 19-biome density profiles, and the Jungle/Desert/Swamp/Tundra/Mediterranean/Alpine/Shrubland flora & decoration roadmap.
 
 ## Testing
 

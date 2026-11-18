@@ -1,14 +1,14 @@
 ## [Unreleased] (target: v1.0.4)
 
 ### Added
+- **Biologically Height-Classified World-Map Flora Sprites & Normal Maps (`art/plant/<species>/{small,medium,big}/`, `docs/SPEC.md`)**:
+  - Replaced multi-stage per-species placeholders with a single authoritative world-map sprite (`1.png`) and tangent-space normal map (`1_n.png`) per specimen, classified into a single size directory by real biological mature height: `small` ($< 0.5\text{ m}$), `medium` ($0.5\text{–}3\text{ m}$), or `big` ($> 3\text{ m}$).
+  - Generated biome specimen art and normal maps across desert, swamp, tundra, mediterranean, alpine meadow, and shrubland species (`acacia_senegal/big`, `acer_pseudoplatanus/big`, `aloe_vera/medium`, `Ammophila_arenaria/medium`, `bellis_perennis/small`, `brassica_oleracea/medium`, `daucus_carota/small`, `Digitalis_purpurea/medium`, `linum_usitatissimum/medium`, `matricaria_chamomilla/small`, `olea_europaea/big`, `opuntia/medium`, `quercus_robur/big`, `salix_babylonica/big`, `Solanum_lycopersicum/medium`, `typha_latifolia/medium`).
 - **Procedural Canopy Occupation & Moisture Competition (§7.3, `include/nd/plant.h`)**:
   - Added `nd_plant_canopy_competition()` modeling multi-scale dominant tree crown suppression (`R_crown`) and arid/desert root-zone moisture exclusion (`R_root`) so emergent trees suppress sub-canopy trees while boosting shade-adapted understory flora in humid biomes and creating natural root-competition spacing in arid biomes.
-- **Full-Scale *Acacia senegal* Diffuse & Tangent-Space Normal Maps (`art/plant/acacia_senegal/{small,big}/`, `docs/SPEC.md`)**:
-  - Added full-scale diffuse (`1.png`, `2.png`) and tangent-space normal map (`1_n.png`, `2_n.png`) sprite assets for *Acacia senegal*, and expanded `docs/SPEC.md` with the physical scale ladder (`1 px = 1 wu = 4 cm`), object dimension tables, and Jungle/Desert biome decoration roadmap.
 - **Botanical Species Expansion & RPG Pixel-Art Sprites (`data/plants.dsv`, `art/plant/`, `include/nd/plant.h`, `docs/SPEC.md`)**:
   - Added 6 species (`quercus robur`, `salix babylonica`, `acer pseudoplatanus`, `olea europaea`, `bellis perennis`, and `typha latifolia`) to `data/plants.dsv` and `enum base_plant` (16 total species) and recalibrated temperature/rainfall envelopes.
-  - Generated 64 transparent RPG pixel-art PNGs (`art/plant/<species>/{small,big}/{1,2}.png`) across all 16 botanical species, growth stages, and variants, plus `core_art_decorate` variant resolution (`plant_art_decorator`).
-  - Added `nd_plant_spec_t`, `nd_biome_flora_profile_t`, and deterministic flora evaluation helpers in `<nd/plant.h>` for shared server/client biome canopy density, tree-vs-herb weighting, and drought/cold hardiness.
+  - Added `nd_plant_spec_t`, `nd_biome_flora_profile_t`, and deterministic flora evaluation helpers in `<nd/plant.h>` for shared server/client biome canopy density, tree-vs-herb weighting, and drought/cold hardiness, and expanded `docs/SPEC.md` with the physical scale ladder (`1 px = 1 wu = 4 cm`) and object dimension tables.
 
 ### Fixed
 - **Coastal Flora Transition & Tile Zero-Initialization (`src/libnd-plant.c`, `include/nd/plant.h`)**:
